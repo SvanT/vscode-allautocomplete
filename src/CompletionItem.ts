@@ -38,15 +38,19 @@ export class CompletionItem extends vscode.CompletionItem {
         this.kind = vscode.CompletionItemKind.Text;
         this.count = 1;
         this.file = file;
+        this.sortText = this.filterText = sortText;
+        this.updateDetails();
+    }
+
+    updateDetails() {
         this.detail = `${DocumentManager.documentDisplayPath(this.file)} (${this.count})`;
         this.documentation = Array.isArray(this.details) ? this.details.join("\n") : new vscode.MarkdownString(`Used \`${this.count}\` times in \n ${this.file.path.replaceAll(/\//g, " > ")}`);
-        this.sortText = this.filterText = sortText;
     }
     
     static copy(item: CompletionItem) {
         let newItem = new CompletionItem(item.label.toString(), item.file);
         newItem.count = item.count;
-        newItem.details = item.details;
+        newItem.updateDetails();
         return newItem;
     }
 }
