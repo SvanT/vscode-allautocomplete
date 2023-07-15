@@ -60,7 +60,7 @@ class WordListClass extends Map<vscode.TextDocument, TrieMap<string, CompletionI
         word = word.replace(Settings.whitespaceSplitter(document.languageId), '');
         if (word.length >= Settings.minWordLength) {
             let item = trie.get(word);
-            if (item && item.label === word) {
+            if (item) {
                 item.count--;
                 if (item.count <= 0) {
                     trie.delete(word);
