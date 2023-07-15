@@ -20,8 +20,9 @@
  */
 'use strict';
 import * as vscode from 'vscode';
-import * as Trie from 'triejs';
-import { Utils, URI} from 'vscode-uri'
+import { TrieMap } from 'mnemonist';
+import { Utils } from 'vscode-uri'
+import { CompletionItem } from './CompletionItem';
 import { Settings } from './Settings';
 import { WordList } from './WordList';
 import { shouldExcludeFile, relativePath } from './Utils';
@@ -66,7 +67,7 @@ class DocumentManagerClass {
         if (WordList.has(document)) {
             return;
         }
-        const trie = new Trie({ enableCache: false, maxCache: 100000, returnRoot: true });
+        const trie = new TrieMap<string, CompletionItem>();
         for (let i = 0; i < Math.min(Settings.maxLines, document.lineCount); ++i) {
             const line = document.lineAt(i);
             const text = line.text;

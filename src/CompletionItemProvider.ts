@@ -53,7 +53,7 @@ class CompletionItemProviderClass {
         }
 
         word = word.replace(whitespaceSplitter, '');
-        let results = [];
+        let results: CompletionItem[] = [];
         const nonContributingToSelf = Settings.dontContributeToSelf || Settings.nonContributingToSelfLanguages.includes(document.languageId);
         WordList.forEach((trie, doc) => {
             if (!Settings.showCurrentDocument) {
@@ -69,10 +69,7 @@ class CompletionItemProviderClass {
                     return;
                 }
             }
-            let words = trie.find(word);
-            if (words) {
-                results = results.concat(words);
-            }
+            results.push(...trie.find(word).map(([,item]) => item))
         });
         let clean: Array<CompletionItem> = [];
         const map = {}, skip="skip";
@@ -81,13 +78,13 @@ class CompletionItemProviderClass {
         map[WordList.activeWord] = skip;
         // Deduplicate results now.
         results.forEach((item) => {
-            let inserted = map[item.label];
+            let inserted = map[item.label.toString()];
             if (!inserted) {
                 clean.push(item);
-                map[item.label] = item;
+                map[item.label.toString()] = item;
                 item.details = [item.detail];
-            } else if(map[item.label] !== skip) {
-                map[item.label].details.push(item.detail);
+            } else if(map[item.label.toString()] !== skip) {
+                map[item.label.toString()].details.push(item.detail);
             }
         });
         // Prevent overflow.

@@ -21,38 +21,32 @@
 
 'use strict';
 import * as vscode from 'vscode';
+import { TrieMap } from 'mnemonist';
 import { Settings } from './Settings';
 import { CompletionItem } from './CompletionItem'
 
-class WordListClass extends Map<vscode.TextDocument, { find: Function }> {
+class WordListClass extends Map<vscode.TextDocument, TrieMap<string, CompletionItem>> {
     activeWord: string;
     /**
      * Add word to the autocomplete list
      *
      * @param {string} word
-     * @param {any} trie
+     * @param {TrieMap} trie
      * @param {vscode.TextDocument} document
      */
-    addWord(word: string, trie: any, document: vscode.TextDocument) {
+    addWord(word: string, trie: TrieMap<string, CompletionItem>, document: vscode.TextDocument) {
         word = word.replace(Settings.whitespaceSplitter(document.languageId), '');
         // Active word is used to hide the given word from the autocomplete.
         this.activeWord = word;
         if (Settings.ignoredWords.indexOf(word) !== -1) return;
         if (word.length >= Settings.minWordLength) {
-            let items = trie.find(word);
-            let item: CompletionItem;
-            items && items.some(elem => {
-                if (elem.label === word) {
-                    item = elem;
-                    return true;
-                }
-            });
+            let item = trie.get(word);
             if (item) {
                 item.count++;
                 item.updateDetails();
             } else {
                 item = new CompletionItem(word, document.uri);
-                trie.add(word, item);
+                trie.set(word, item);
             }
         }
     }
@@ -60,23 +54,16 @@ class WordListClass extends Map<vscode.TextDocument, { find: Function }> {
      * Remove word from the search index.
      *
      * @param {string} word
-     * @param {any} trie
+     * @param {TrieMap} trie
      */
-    removeWord(word: string, trie, document: vscode.TextDocument) {
+    removeWord(word: string, trie: TrieMap<string, CompletionItem>, document: vscode.TextDocument) {
         word = word.replace(Settings.whitespaceSplitter(document.languageId), '');
         if (word.length >= Settings.minWordLength) {
-            let items = trie.find(word);
-            items = items?.filter(elem => {
-                return elem.label === word;
-            }) ?? [];
-            if (items.length > 0) {
-                for (let item of items) {
-                    if (item && item.label === word) {
-                        item.count--;
-                        if (item.count <= 0) {
-                            trie.remove(word);
-                        }
-                    }
+            let item = trie.get(word);
+            if (item && item.label === word) {
+                item.count--;
+                if (item.count <= 0) {
+                    trie.delete(word);
                 }
             }
         }
