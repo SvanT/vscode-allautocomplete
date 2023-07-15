@@ -93,7 +93,7 @@ class ActiveDocManager {
         if (r.isSingleLine) {
             oldText = line.substring(start, end);
         } else {
-            let oldText = nLine.substring(start);
+            oldText = line.substring(start);
             for (let i = r.start.line + 1; i < r.end.line; ++i) {
                 oldText += "\n" + content[i];
             }
