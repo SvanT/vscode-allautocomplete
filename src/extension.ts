@@ -26,22 +26,15 @@ import { Settings } from './Settings';
 import { WordList } from './WordList';
 import { shouldExcludeFile } from './Utils';
 import { DocumentManager } from './DocumentManager';
-import { TextDocument, workspace, TextDocumentChangeEvent, Range, window } from "vscode";
+import { TextDocument, workspace, TextDocumentChangeEvent, window } from "vscode";
 
-let content = [];
+let content: string[] = [];
 /**
  * Utility class to manage the active document
  *
  * @class ActiveDocManager
  */
 class ActiveDocManager {
-    static beginTransaction() { }
-    static endTransaction(updated: boolean) {
-        if (updated) {
-            return;
-        }
-        ActiveDocManager.updateContent();
-    }
     static updateContent() {
         if (!window.activeTextEditor || !window.activeTextEditor.document) {
             return;
@@ -56,68 +49,6 @@ class ActiveDocManager {
         }
     }
     /**
-     * Gets content replacement information for range replacement
-     *
-     * @static
-     * @param {Range} r
-     * @param {string} newText
-     * @returns {new:string, old:string}
-     *
-     * @memberof ActiveDocManager
-     */
-    static replace(r: Range, newText: string, noOfChangesInTransaction: number): any {
-        // Find old text
-        let line: string = content[r.start.line] || "";
-        // Get the closest space to the left and right;
-
-        // Start is the actual start wordIndex
-        let start: number;
-        for (start = r.start.character - 1; start > 0; --start) {
-            if ((line[start] || "").match(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId))) {
-                start = start + 1;
-                break;
-            }
-        }
-
-        // End is the actual end wordIndex
-        let end: number;
-        let nLine = content[r.end.line] || "";
-        for (end = r.end.character; end < nLine.length; ++end) {
-            if ((nLine[end] || "").match(/\s/)) {
-                end = end;
-                break;
-            }
-        }
-
-        let oldText = "";
-        if (r.isSingleLine) {
-            oldText = line.substring(start, end);
-        } else {
-            oldText = line.substring(start);
-            for (let i = r.start.line + 1; i < r.end.line; ++i) {
-                oldText += "\n" + content[i];
-            }
-            oldText += nLine.substring(0, end);
-        }
-        const nwText = line.substring(start, r.start.character) + newText + nLine.substring(r.end.character, end);
-        let updated = false;
-        if (noOfChangesInTransaction === 1 && r.isSingleLine) {
-            // Special case. Optimize for a single cursor in a single line as that is too frequent to do a re-read.
-            const newLine = line.substring(0, r.start.character) + newText + nLine.substring(r.end.character);
-            const n = newLine.split(window.activeTextEditor.document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n");
-            content[r.start.line] = n[0];
-            for (let i = 1; i < n.length; ++i) {
-                content.splice(r.start.line + i, 0, n[i]);
-            }
-            updated = true;
-        }
-        return {
-            old: oldText.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)),
-            new: nwText.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)),
-            updated: updated
-        };
-    }
-    /**
      * Handle content changes to active document
      *
      * @static
@@ -126,7 +57,7 @@ class ActiveDocManager {
      *
      * @memberof ActiveDocManager
      */
-    static handleContextChange(e: TextDocumentChangeEvent) {
+    static handleContentChange(e: TextDocumentChangeEvent) {
         const activeIndex = WordList.get(e.document);
         if (!activeIndex) {
             console.log("No index found");
@@ -136,19 +67,21 @@ class ActiveDocManager {
             console.log("Unexpected Active Doc. Parsing broken");
             return;
         }
-        ActiveDocManager.beginTransaction();
-        let updated = true;
-        e.contentChanges.forEach((change) => {
-            let diff = ActiveDocManager.replace(change.range, change.text, e.contentChanges.length);
-            diff.old.forEach((string) => {
+
+        if (e.contentChanges.length === 1 && e.contentChanges[0].range.isSingleLine) {
+            const lineNum = e.contentChanges[0].range.start.line;
+            const newLineText = window.activeTextEditor.document.lineAt(lineNum).text;
+            content[lineNum]?.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)).forEach((string) => {
                 WordList.removeWord(string, activeIndex, e.document);
-            });
-            diff.new.forEach((string) => {
+            })
+            newLineText.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)).forEach((string) => {
                 WordList.addWord(string, activeIndex, e.document);
             });
-            updated = updated && diff.updated;
-        });
-        ActiveDocManager.endTransaction(updated);
+            content[lineNum] = newLineText;
+        } else {
+          DocumentManager.resetDocument(e.document);
+          ActiveDocManager.updateContent();
+        }
     }
 }
 let olderActiveDocument:TextDocument;
@@ -236,7 +169,7 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
         if (!Settings.updateOnlyOnSave && Settings.showCurrentDocument && e.contentChanges.length > 0) {
-            ActiveDocManager.handleContextChange(e);
+            ActiveDocManager.handleContentChange(e);
         }
     }));
     if (Settings.updateOnlyOnSave) {
