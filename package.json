@@ -1,9 +1,8 @@
 {
-  "name": "All-Autocomplete",
-  "displayName": "All Autocomplete",
-  "description": "Create autocomplete items from open files in VSCode.",
-  "version": "0.0.26",
-  "publisher": "Atishay-Jain",
+  "name": "svant-all-autocomplete",
+  "displayName": "svant-all-autocomplete",
+  "version": "0.0.1",
+  "publisher": "SvanteBoberg",
   "license": "MIT",
   "engines": {
     "vscode": "^1.40.0"
@@ -11,29 +10,13 @@
   "categories": [
     "Other"
   ],
-  "keywords": [
-    "autocomplete",
-    "all autocomplete",
-    "intellisense",
-    "intellisense from open files",
-    "code completion"
-  ],
-  "galleryBanner": {
-    "color": "#5F889E",
-    "theme": "light"
-  },
-  "bugs": {
-    "url": "https://github.com/atishay/vscode-allautocomplete/issues"
-  },
-  "homepage": "https://github.com/atishay/vscode-allautocomplete",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atishay/vscode-allautocomplete.git"
+    "url": "https://github.com/SvanT/vscode-allautocomplete.git"
   },
   "activationEvents": [
     "*"
   ],
-  "icon": "images/icon.png",
   "contributes": {
     "commands": [
       {
