@@ -67,7 +67,7 @@ class ActiveDocManager {
             return;
         }
 
-        if (e.contentChanges.length === 1 && e.contentChanges[0].range.isSingleLine) {
+        if (e.contentChanges.length === 1 && e.contentChanges[0].range.isSingleLine && !e.contentChanges[0].text.includes("\n")) {
             const lineNum = e.contentChanges[0].range.start.line;
             const newLineText = window.activeTextEditor.document.lineAt(lineNum).text;
             content[lineNum]?.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)).forEach((string) => {
