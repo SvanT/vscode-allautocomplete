@@ -22,7 +22,7 @@
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri'
 import { Settings } from './Settings';
-import { shouldExcludeFile, relativePath } from './Utils';
+import { shouldExcludeFile } from './Utils';
 
 export const wordLists = new Map<vscode.TextDocument, string[]>
 
@@ -32,8 +32,6 @@ export const wordLists = new Map<vscode.TextDocument, string[]>
  * @class DocumentManagerClass
  */
 class DocumentManagerClass {
-    private paths: Map<string, string> = new Map<string, string>();
-    private files: Map<string, string[]> = new Map<string, string[]>();
     /**
      * Method to initialize the document manager.
      *
@@ -68,34 +66,10 @@ class DocumentManagerClass {
         }
         const wordList = document.getText().split(Settings.whitespaceSplitter(document.languageId));
         wordLists.set(document, wordList);
-        let filename = relativePath(document.uri);
         let basename = Utils.basename(document.uri);
 
         // Add the current document name to the wordlist.
         wordList.push(basename);
-
-        if (this.files[basename]) {
-            this.files[basename].push(filename);
-            for (let i = 0; i < this.files[basename].length; ++i) {
-                this.paths[this.files[basename][i]] = this.files[basename][i];
-            }
-        } else {
-            // Easy case
-            this.files[basename] = [filename];
-            this.paths[filename] = basename;
-        }
-    }
-
-    /**
-     * Utility method to find paths of active documents which takes care
-     * of relative names if there are multiple documents of the same name
-     *
-     * @param {string} docPath Absolute path
-     * @returns relative path to show
-     * @memberof DocumentManagerClass
-     */
-    documentDisplayPath(docPath: vscode.Uri) {
-        return this.paths[relativePath(docPath)];
     }
 
     /**
@@ -132,24 +106,6 @@ class DocumentManagerClass {
      */
     private clearDocumentInternal(document: vscode.TextDocument) {
         wordLists.delete(document);
-        let filename = relativePath(document.uri);
-        let basename = Utils.basename(document.uri);
-        delete this.paths[filename];
-        if (!this.files[basename]) {
-            return;
-        }
-        if (this.files[basename].length === 1) {
-            delete this.files[basename];
-        } else {
-            this.files[basename].splice(this.files[basename].indexOf(filename), 1);
-            if (this.files[basename].length === 1) {
-                this.paths[this.files[basename][0]] = basename;
-            } else {
-                for (let i = 0; i < this.files[basename].length; ++i) {
-                    this.paths[this.files[basename][i]] = this.files[basename][i];
-                }
-            }
-        }
     }
 
 }
