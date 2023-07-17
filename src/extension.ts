@@ -23,9 +23,8 @@
 import * as vscode from 'vscode';
 import { CompletionItemProvider } from './CompletionItemProvider';
 import { Settings } from './Settings';
-import { WordList } from './WordList';
 import { shouldExcludeFile } from './Utils';
-import { DocumentManager } from './DocumentManager';
+import { DocumentManager, wordLists } from './DocumentManager';
 import { TextDocument, workspace, TextDocumentChangeEvent, window } from "vscode";
 
 let content: string[] = [];
@@ -58,8 +57,8 @@ class ActiveDocManager {
      * @memberof ActiveDocManager
      */
     static handleContentChange(e: TextDocumentChangeEvent) {
-        const activeIndex = WordList.get(e.document);
-        if (!activeIndex) {
+        const wordList = wordLists.get(e.document);
+        if (!wordList) {
             console.log("No index found");
             return;
         }
@@ -72,10 +71,10 @@ class ActiveDocManager {
             const lineNum = e.contentChanges[0].range.start.line;
             const newLineText = window.activeTextEditor.document.lineAt(lineNum).text;
             content[lineNum]?.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)).forEach((string) => {
-                WordList.removeWord(string, activeIndex, e.document);
+                wordList.splice(wordList.indexOf(string), 1);
             })
             newLineText.split(Settings.whitespaceSplitter(window.activeTextEditor.document.languageId)).forEach((string) => {
-                WordList.addWord(string, activeIndex, e.document);
+                wordList.push(string);
             });
             content[lineNum] = newLineText;
         } else {
@@ -206,6 +205,6 @@ export async function activate(context: vscode.ExtensionContext) {
  * @export
  */
 export function deactivate() {
-    WordList.clear();
+    wordLists.clear();
     content = [];
 }

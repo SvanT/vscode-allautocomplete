@@ -37,7 +37,6 @@ class SettingsClass {
     showOpenDocuments: boolean;
     defaultWhitespaceSplitter: RegExp;
     maxLines: number;
-    minWordLength: number;
     wordListFiles: Array<vscode.Uri>
     languageWhitespace: Map<String, RegExp>;
     languageSpecialCharacters: Map<String, RegExp>;
@@ -46,7 +45,6 @@ class SettingsClass {
     dontContributeToSelf: boolean;
     init() {
         const config = vscode.workspace.getConfiguration('AllAutocomplete');
-        this.minWordLength = Number(config.get("minWordLength"));
         this.maxLines = Number(config.get("maxLines"));
         this.defaultWhitespaceSplitter = new RegExp(config.get("whitespace").toString(), "g");
         this.showCurrentDocument = !!config.get("showCurrentDocument");

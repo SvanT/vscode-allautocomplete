@@ -20,12 +20,11 @@
  */
 'use strict';
 import * as vscode from 'vscode';
-import { TrieMap } from 'mnemonist';
 import { Utils } from 'vscode-uri'
-import { CompletionItem } from './CompletionItem';
 import { Settings } from './Settings';
-import { WordList } from './WordList';
 import { shouldExcludeFile, relativePath } from './Utils';
+
+export const wordLists = new Map<vscode.TextDocument, string[]>
 
 /**
  * Class to manage addition and removal of documents from the index
@@ -64,25 +63,17 @@ class DocumentManagerClass {
         }
         // Don't parse a document already present. The existing document
         // case takes place when
-        if (WordList.has(document)) {
+        if (wordLists.has(document)) {
             return;
         }
-        const trie = new TrieMap<string, CompletionItem>();
-        for (let i = 0; i < Math.min(Settings.maxLines, document.lineCount); ++i) {
-            const line = document.lineAt(i);
-            const text = line.text;
-            const words = text.split(Settings.whitespaceSplitter(document.languageId));
-            words.forEach((word) => {
-                WordList.addWord(word, trie, document);
-            });
-        }
-        WordList.set(document, trie);
+        const wordList = document.getText().split(Settings.whitespaceSplitter(document.languageId));
+        wordLists.set(document, wordList);
         let filename = relativePath(document.uri);
         let basename = Utils.basename(document.uri);
         let extension = Utils.extname(document.uri);
 
         // Add the current document name to the trie.
-        WordList.addWord(`${basename}${extension ? "." + extension : ""}`, trie, document);
+        wordList.push(`${basename}${extension ? "." + extension : ""}`);
 
         if (this.files[basename]) {
             this.files[basename].push(filename);
@@ -141,7 +132,7 @@ class DocumentManagerClass {
      * @memberof DocumentManagerClass
      */
     private clearDocumentInternal(document: vscode.TextDocument) {
-        WordList.delete(document);
+        wordLists.delete(document);
         let filename = relativePath(document.uri);
         let basename = Utils.basename(document.uri);
         delete this.paths[filename];

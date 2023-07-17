@@ -20,9 +20,8 @@
  */
 
 import * as vscode from 'vscode';
+import { wordLists } from './DocumentManager';
 import { Settings } from './Settings';
-import { WordList } from './WordList';
-import { CompletionItem } from './CompletionItem';
 
 /**
  * Class that provides completion items for this extension.
@@ -44,7 +43,6 @@ class CompletionItemProviderClass {
         const whitespaceSplitter = Settings.whitespaceSplitter(document.languageId);
 
         if (document.languageId === 'elm' || document.languageId === 'php') {
-            var oldWord = word;
             // The language server for elm does not give the right word range.
             // So we ignore its recommendation and use something else
             // See https://github.com/atishay/vscode-allautocomplete/issues/16
@@ -53,9 +51,9 @@ class CompletionItemProviderClass {
         }
 
         word = word.replace(whitespaceSplitter, '');
-        let results: CompletionItem[] = [];
+        let results = [];
         const nonContributingToSelf = Settings.dontContributeToSelf || Settings.nonContributingToSelfLanguages.includes(document.languageId);
-        WordList.forEach((trie, doc) => {
+        wordLists.forEach((wordList, doc) => {
             if (!Settings.showCurrentDocument) {
                 if (doc === document) {
                     return;
@@ -69,38 +67,18 @@ class CompletionItemProviderClass {
                     return;
                 }
             }
-            results.push(...trie.find(word).map(([,item]) => item))
+            results.push(...wordList)
         });
-        let clean: Array<CompletionItem> = [];
-        const map = {}, skip="skip";
-        // Do not show the same word in autocomplete.
-        map[word] = skip;
-        map[WordList.activeWord] = skip;
         // Deduplicate results now.
-        results.forEach((item) => {
-            let inserted = map[item.label.toString()];
-            if (!inserted) {
-                clean.push(item);
-                map[item.label.toString()] = item;
-                item.details = [item.detail];
-            } else if(map[item.label.toString()] !== skip) {
-                map[item.label.toString()].details.push(item.detail);
-            }
-        });
-        if (Array.isArray(specialCharacters) && specialCharacters.length > 0) {
-            clean = clean.map((item) => CompletionItem.copy(item))
-            clean.forEach((item) => {
-                item.label = specialCharacters[0] + item.label;
-
-                // Hack for the broken getWordRangeAtPosition API in ELM & PHP
-                if (document.languageId === "elm" || document.languageId === 'php') {
-                    let k = item.label.slice(word.length);
-                    item.filterText = oldWord + k;
-                    item.insertText = item.filterText;
-                }
-            });
+        const set = new Set(results);
+        set.delete(word);
+        results = Array.from(set);
+        if (Array.isArray(specialCharacters) && specialCharacters?.[0]) {
+            results.push(...results.map(result => specialCharacters[0] + result));
         }
-        return clean;
+        const completions = results.map(result => new vscode.CompletionItem(result, vscode.CompletionItemKind.Text));
+
+        return completions;
     }
 }
 
