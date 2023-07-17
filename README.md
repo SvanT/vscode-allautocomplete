@@ -25,7 +25,6 @@ This extension has the following settings:
 
 * `AllAutocomplete.minWordLength`: Minimum word length to keep in autocomplete list.
 * `AllAutocomplete.maxLines`: Maximum number of lines to read from a file.
-* `AllAutocomplete.maxItemsInSingleList`: Maximum number of items sent to autocomplete in a single API call (Autocomplete might not complete more items than this in a call).
 * `AllAutocomplete.whitespace`: Regex to use for splitting whitespace.
 * `AllAutocomplete.showCurrentDocument`: Show results from the current document in the autocomplete results.
 * `AllAutocomplete.ignoredWords`: Words to ignore(separated by AllAutocomplete.whitespace) from autocomplete.
@@ -69,7 +68,6 @@ The emmet plugin takes over the special character `#` in CSS and therefore that 
 
 ### RAM
 
-* `AllAutocomplete.maxItemsInSingleList` controls the number of items populating the autocomplete list.
 * `AllAutocomplete.maxLines` control the number of lines to read in a document. Longer documents can be ignored.
 
 **Enjoy!**

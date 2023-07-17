@@ -41,13 +41,11 @@ class SettingsClass {
     wordListFiles: Array<vscode.Uri>
     languageWhitespace: Map<String, RegExp>;
     languageSpecialCharacters: Map<String, RegExp>;
-    maxItemsInSingleList: number;
     nonContributingLanguages: Array<string>;
     nonContributingToSelfLanguages: Array<string>;
     dontContributeToSelf: boolean;
     init() {
         const config = vscode.workspace.getConfiguration('AllAutocomplete');
-        this.maxItemsInSingleList = Number(config.get("maxItemsInSingleList"));
         this.minWordLength = Number(config.get("minWordLength"));
         this.maxLines = Number(config.get("maxLines"));
         this.defaultWhitespaceSplitter = new RegExp(config.get("whitespace").toString(), "g");

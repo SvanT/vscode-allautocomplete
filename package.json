@@ -76,11 +76,6 @@
           "default": 9999,
           "description": "All Autocomplete: Maximum number of lines to read from a file."
         },
-        "AllAutocomplete.maxItemsInSingleList": {
-          "type": "number",
-          "default": 999,
-          "description": "All Autocomplete: Maximum number of items sent for autocomplete in a single API call."
-        },
         "AllAutocomplete.whitespace": {
           "type": "string",
           "default": "[^\\w\\-_\\$\\u0080-\\uFFFF]+",
