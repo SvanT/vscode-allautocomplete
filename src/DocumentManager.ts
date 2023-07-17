@@ -48,7 +48,7 @@ class DocumentManagerClass {
 
     }
     /**
-     * Parses a document to create a trie for the document.
+     * Parses a document to create a wordlist for the document.
      *
      * @param {TextDocument} document
      * @memberof DocumentManagerClass
@@ -70,10 +70,9 @@ class DocumentManagerClass {
         wordLists.set(document, wordList);
         let filename = relativePath(document.uri);
         let basename = Utils.basename(document.uri);
-        let extension = Utils.extname(document.uri);
 
-        // Add the current document name to the trie.
-        wordList.push(`${basename}${extension ? "." + extension : ""}`);
+        // Add the current document name to the wordlist.
+        wordList.push(basename);
 
         if (this.files[basename]) {
             this.files[basename].push(filename);
