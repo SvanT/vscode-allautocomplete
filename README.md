@@ -23,6 +23,7 @@ Use `editor.wordBasedSuggestionsMode` setting and set this to `allDocuments` to 
 
 This extension has the following settings:
 
+* `AllAutocomplete.minWordLength`: Minimum word length to keep in autocomplete list.
 * `AllAutocomplete.maxLines`: Maximum number of lines to read from a file.
 * `AllAutocomplete.whitespace`: Regex to use for splitting whitespace.
 * `AllAutocomplete.showCurrentDocument`: Show results from the current document in the autocomplete results.

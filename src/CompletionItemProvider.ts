@@ -67,7 +67,11 @@ class CompletionItemProviderClass {
                     return;
                 }
             }
-            wordList.forEach(word => results.add(word));
+            wordList.forEach((word) => {
+              if (word.length >= Settings.minWordLength) {
+                results.add(word);
+              }
+            });
         });
         results.delete(word);
         if (Array.isArray(specialCharacters) && specialCharacters?.[0]) {
