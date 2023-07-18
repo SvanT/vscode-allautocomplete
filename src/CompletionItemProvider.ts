@@ -74,7 +74,11 @@ class CompletionItemProviderClass {
             Array.from(results).forEach(result => results.add(specialCharacters[0] + result));
         }
 
-        return Array.from(results).map(result => new vscode.CompletionItem(result, vscode.CompletionItemKind.Text));
+        return Array.from(results).map(result => {
+            const item = new vscode.CompletionItem(result, vscode.CompletionItemKind.Text)
+            item.sortText = 'zz' + result;
+            return item;
+        });
     }
 }
 
