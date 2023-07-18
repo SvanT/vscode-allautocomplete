@@ -51,7 +51,7 @@ class CompletionItemProviderClass {
         }
 
         word = word.replace(whitespaceSplitter, '');
-        let results = [];
+        const results = new Set<string>();
         const nonContributingToSelf = Settings.dontContributeToSelf || Settings.nonContributingToSelfLanguages.includes(document.languageId);
         wordLists.forEach((wordList, doc) => {
             if (!Settings.showCurrentDocument) {
@@ -67,18 +67,14 @@ class CompletionItemProviderClass {
                     return;
                 }
             }
-            results.push(...wordList)
+            wordList.forEach(word => results.add(word));
         });
-        // Deduplicate results now.
-        const set = new Set(results);
-        set.delete(word);
-        results = Array.from(set);
+        results.delete(word);
         if (Array.isArray(specialCharacters) && specialCharacters?.[0]) {
-            results.push(...results.map(result => specialCharacters[0] + result));
+            Array.from(results).forEach(result => results.add(specialCharacters[0] + result));
         }
-        const completions = results.map(result => new vscode.CompletionItem(result, vscode.CompletionItemKind.Text));
 
-        return completions;
+        return Array.from(results).map(result => new vscode.CompletionItem(result, vscode.CompletionItemKind.Text));
     }
 }
 
